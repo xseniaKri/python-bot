@@ -4,6 +4,8 @@ from aiogram.fsm.context import FSMContext
 from app.states.quiz_states import Quiz
 from app.data.questions import questions
 from app.keyboards.quiz_kb import generate_keyboard
+from app.db.crud import get_or_create_user, add_result
+
 
 quiz_router = Router()
 
@@ -75,5 +77,17 @@ async def handle_end(callback: types.CallbackQuery, correct: int) -> None:
         end = ""
     else:
         end = "а"
-    await callback.message.answer(text=f"Поздравляю с прохождением теста! Вы набрали {correct} балл{end}\nВаш уровень: {level}.")
+
+    nickname = callback.from_user.username or callback.from_user.full_name
+
+    user = await get_or_create_user(nickname=nickname)
+    await add_result(user_id=user.user_id, total_score=correct)
+
+    await callback.message.answer(
+        text=(
+            f"Поздравляю с прохождением теста! "
+            f"Вы набрали {correct} балл{end}\n"
+            f"Ваш уровень: {level}."
+        )
+    )
 

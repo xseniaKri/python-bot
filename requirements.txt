@@ -1,5 +1,8 @@
 aiogram>=3.0.0
 aiohttp==3.9.3
-fastapi==0.115.12
+asyncpg
+fastapi
 requests==2.31.0
 python-dotenv==1.1.0
+sqlalchemy
+uvicorn
