@@ -132,4 +132,4 @@ async def send_info(callback: types.CallbackQuery):
     info = await get_result(user_id=user_id)
 
     await bot.send_message(chat_id=ADMIN_ID, text=f"{link} хочет записаться на пробное занятие.\n"
-                           f"Результат: {info["result"]}.\nСамое сложное: {info["hard"]}")
+                           f"Результат: {info['result']}.\nСамое сложное: {info['hard']}")
