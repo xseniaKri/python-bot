@@ -54,7 +54,7 @@ async def handle_answer(callback: types.CallbackQuery, state: FSMContext):
         await callback.message.answer(good_answers[choice])
     else:
         choice = randint(0, 4)
-        await callback.message.answer(bad_answers[choice] + f"\n\nПравильный ответ: {question["correct"]}")
+        await callback.message.answer(bad_answers[choice] + f"\n\nПравильный ответ: {question['correct']}")
 
     idx += 1
     if idx == len(questions):
