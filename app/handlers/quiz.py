@@ -1,10 +1,12 @@
-from aiogram import Router, types
+from aiogram import Router, types, F
 from aiogram.fsm.context import FSMContext
+from random import randint
 
 from app.states.quiz_states import Quiz
-from app.data.questions import questions
+from app.data.questions import questions, good_answers, bad_answers, final_vars
 from app.keyboards.quiz_kb import generate_keyboard
 from app.db.crud import get_or_create_user, add_result
+from app.create_bot import bot
 
 
 quiz_router = Router()
@@ -45,15 +47,17 @@ async def handle_answer(callback: types.CallbackQuery, state: FSMContext):
 
     if user_answer == question["correct"]:
         correct += 1
-        await callback.message.answer("Правильно!")
+        choice = randint(0, 3)
+        await callback.message.answer(good_answers[choice])
     else:
-        await callback.message.answer("Неправильно!")
+        choice = randint(0, 4)
+        await callback.message.answer(bad_answers[choice] + f"\n\nПравильный ответ: {question["correct"]}")
 
     idx += 1
     if idx == len(questions):
         await handle_end(callback=callback, correct=correct)
         await state.clear()
-        await state.update_data(completed=True)
+        await state.set_state(Quiz.end)
 
     else:
         await state.update_data(current_question=idx, correct_answers=correct)
@@ -61,15 +65,14 @@ async def handle_answer(callback: types.CallbackQuery, state: FSMContext):
 
 async def handle_end(callback: types.CallbackQuery, correct: int) -> None:
     if correct in [0, 1, 2]:
-        level = "A0"
+        first = "Вы в начале пути, но это будет классное путешествие!\n\n"
+        level = "Вы на начальном уровне владения английским языком.\n"
     elif correct in [3, 4]:
-        level = "A1"
-    elif correct in [5, 6]:
-        level = "A2"
-    elif correct in [7, 8]:
-        level = "B1"
+        first = "Вы на правильном пути! Так держать)\n\n"
+        level = "Вы на среднем уровне или приближаетесь к нему.\n"
     else:
-        level = "B2"
+        first = "Вы проделали большую работу!\n\n"
+        level = "Ваш уровень средний или выше среднего\n"
 
     if correct in [0, 5, 6, 7, 8, 9, 10]:
         end = "ов"
@@ -79,15 +82,40 @@ async def handle_end(callback: types.CallbackQuery, correct: int) -> None:
         end = "а"
 
     nickname = callback.from_user.username or callback.from_user.full_name
-
+    name = callback.from_user.full_name or callback.from_user.username
     user = await get_or_create_user(nickname=nickname)
     await add_result(user_id=user.user_id, total_score=correct)
 
     await callback.message.answer(
         text=(
-            f"Поздравляю с прохождением теста! "
-            f"Вы набрали {correct} балл{end}\n"
-            f"Ваш уровень: {level}."
+            first + f"Ваш результат: {correct} балл{end}. " + level + "\nПримечание: тест показывает только знание грамматики. Для определения уровня говорения и понимания на слух нужно устное тестирование с преподавателем."
         )
     )
+    await callback.message.answer(
+        text=(
+            f"{name}, скажите, что сложнее всего дается Вам?"
+        ),
+        reply_markup=generate_keyboard(final_vars)
+    )
 
+@quiz_router.callback_query(Quiz.end and F.data != "Записаться")
+async def consultation(callback: types.CallbackQuery):
+    nickname = callback.from_user.full_name or callback.from_user.username
+
+    await callback.message.answer(text=(
+        f"{nickname}, понял Вас.\n\n"
+        f"Хотите узнать как преодолеть эти трудности?\n\n"
+        f"✍️ Записывайтесь на бесплатный урок.\n"
+        f"✔️Определим Ваш текущий уровень английского без всяких тестов.\n"
+        f"✔️Построим четкий план действий для достижения Вашей цели.\n"
+        f"🎁 Получите подарок — Топ 25 ресурсов для языковой практики.\n"
+    ),
+    reply_markup=generate_keyboard(["Записаться"]))
+
+@quiz_router.callback_query(F.data == "Записаться")
+async def send_info(callback: types.CallbackQuery):
+    link = "@" + callback.from_user.username
+    user_id = callback.from_user.id
+    print(f"получили. id: {user_id}")
+    await callback.message.answer(text="Я свяжусь с Вами в ближайшее время!")
+    await bot.send_message(chat_id=user_id, text=f"{link} хочет записаться на пробное занятие.")
