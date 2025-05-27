@@ -4,3 +4,4 @@ class Quiz(StatesGroup):
     question = State()
     end = State()
     start = State()
+    hard_question = State()

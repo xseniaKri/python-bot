@@ -1,14 +1,17 @@
 from aiogram import Router, types, F
 from aiogram.fsm.context import FSMContext
 from random import randint
+from os import getenv
+from dotenv import load_dotenv
 
 from app.states.quiz_states import Quiz
 from app.data.questions import questions, good_answers, bad_answers, final_vars
 from app.keyboards.quiz_kb import generate_keyboard
-from app.db.crud import get_or_create_user, add_result
+from app.db.crud import add_result, get_result
 from app.create_bot import bot
 
-
+load_dotenv()
+ADMIN_ID = getenv("ADMIN_ID")
 quiz_router = Router()
 
 @quiz_router.message()
@@ -55,9 +58,11 @@ async def handle_answer(callback: types.CallbackQuery, state: FSMContext):
 
     idx += 1
     if idx == len(questions):
+        await state.update_data(user_id=callback.from_user.id,
+                                nickname=callback.from_user.username,
+                                result=correct)
         await handle_end(callback=callback, correct=correct)
-        await state.clear()
-        await state.set_state(Quiz.end)
+        await state.set_state(Quiz.hard_question)
 
     else:
         await state.update_data(current_question=idx, correct_answers=correct)
@@ -81,10 +86,8 @@ async def handle_end(callback: types.CallbackQuery, correct: int) -> None:
     else:
         end = "а"
 
-    nickname = callback.from_user.username or callback.from_user.full_name
+
     name = callback.from_user.full_name or callback.from_user.username
-    user = await get_or_create_user(nickname=nickname)
-    await add_result(user_id=user.user_id, total_score=correct)
 
     await callback.message.answer(
         text=(
@@ -98,12 +101,18 @@ async def handle_end(callback: types.CallbackQuery, correct: int) -> None:
         reply_markup=generate_keyboard(final_vars)
     )
 
-@quiz_router.callback_query(Quiz.end and F.data != "Записаться")
-async def consultation(callback: types.CallbackQuery):
-    nickname = callback.from_user.full_name or callback.from_user.username
+@quiz_router.callback_query(Quiz.hard_question)
+async def handle_hard_answer(callback: types.CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    user_id = data.get("user_id")
+    nickname = data.get("nickname")
+    result = data.get("result")
+    hard = callback.data
+    name = callback.from_user.full_name
+    await add_result(user_id=user_id, nickname=nickname, result=result, hard=hard)
 
     await callback.message.answer(text=(
-        f"{nickname}, понял Вас.\n\n"
+        f"{name}, понял Вас.\n\n"
         f"Хотите узнать как преодолеть эти трудности?\n\n"
         f"✍️ Записывайтесь на бесплатный урок.\n"
         f"✔️Определим Ваш текущий уровень английского без всяких тестов.\n"
@@ -112,10 +121,15 @@ async def consultation(callback: types.CallbackQuery):
     ),
     reply_markup=generate_keyboard(["Записаться"]))
 
+    await state.clear()
+
+
 @quiz_router.callback_query(F.data == "Записаться")
 async def send_info(callback: types.CallbackQuery):
     link = "@" + callback.from_user.username
     user_id = callback.from_user.id
-    print(f"получили. id: {user_id}")
     await callback.message.answer(text="Я свяжусь с Вами в ближайшее время!")
-    await bot.send_message(chat_id=user_id, text=f"{link} хочет записаться на пробное занятие.")
+    info = await get_result(user_id=user_id)
+
+    await bot.send_message(chat_id=ADMIN_ID, text=f"{link} хочет записаться на пробное занятие.\n"
+                           f"Результат: {info["result"]}.\nСамое сложное: {info["hard"]}")

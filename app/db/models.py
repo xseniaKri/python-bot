@@ -1,18 +1,13 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import String, BigInteger, Integer
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
-class User(Base):
+class Users(Base):
     __tablename__ = "users"
-    user_id = Column(Integer, primary_key=True)
-    nickname = Column(String)
-    results = relationship("Result", back_populates="user")
-
-class Result(Base):
-    __tablename__ = "results"
-    result_id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.user_id"))
-    total_score = Column(Integer)
-    user = relationship("User", back_populates="results")
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(BigInteger)
+    nickname: Mapped[str] = mapped_column(String(30))
+    result: Mapped[int] = mapped_column(Integer)
+    hard: Mapped[str] = mapped_column(String(30))

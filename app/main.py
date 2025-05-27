@@ -9,9 +9,6 @@ from app.handlers.start import start_router
 from app.handlers.quiz import quiz_router
 from app.create_bot import bot, dp
 
-from app.webserver import app  # импорт FastAPI-приложения
-import uvicorn
-
 
 
 async def start_bot():
@@ -20,15 +17,10 @@ async def start_bot():
     await bot.delete_webhook()
     await dp.start_polling(bot)
 
-async def start_webserver():
-    config = uvicorn.Config(app=app, host="0.0.0.0", port=8000, log_level="info")
-    server = uvicorn.Server(config)
-    await server.serve()
 
 async def main() -> None:
     await asyncio.gather(
-        start_bot(),
-        start_webserver()
+        start_bot()
     )
 
 if __name__ == "__main__":
