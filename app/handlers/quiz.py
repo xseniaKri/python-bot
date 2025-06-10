@@ -14,7 +14,7 @@ load_dotenv()
 ADMIN_ID = getenv("ADMIN_ID")
 quiz_router = Router()
 
-@quiz_router.message(F.data == 'Да')
+@quiz_router.callback_query(F.data == 'Да')
 async def start_quiz_handler(message: types.Message, state: FSMContext):
     data = await state.get_data()
     print(data.get("completed"))

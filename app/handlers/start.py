@@ -19,10 +19,10 @@ async def command_start_handler(message: Message, state: FSMContext) -> None:
 
 
 
-@start_router.message(F.data == "Нет")
+@start_router.callback_query(F.data == "Нет")
 async def no_handler(message: Message) -> None:
     try:
-        await message.answer(f"А чего пришел тогда?")
+        await message.answer(f"А чего пришли тогда?")
     except TypeError:
         await message.answer("Наташ, мы все сломали. Вообще все.")
 
