@@ -15,20 +15,20 @@ ADMIN_ID = getenv("ADMIN_ID")
 quiz_router = Router()
 
 @quiz_router.callback_query(F.data == 'Да')
-async def start_quiz_handler(message: types.Message, state: FSMContext):
+async def start_quiz_handler(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     print(data.get("completed"))
     if data.get("completed"):
 
-        await message.answer(text="Вы уже прошли тест!")
+        await callback.message.answer(text="Вы уже прошли тест!")
         return
 
     await state.set_state(Quiz.question)
     await state.update_data(current_question=0, correct_answers=0)
-    await message.answer(text=f"Супер! Тогда начнем.\n"
+    await callback.message.answer(text=f"Супер! Тогда начнем.\n"
                                  f"Время прохождения: 3-5 минут.\n"
                                  f"Выбирайте из предложенных кнопок, поскольку текст с обычной клавиатуры не воспринимается тестом.\n")
-    await send_question(message, state)
+    await send_question(callback.message, state)
 
 async def send_question(message: types.Message | types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
