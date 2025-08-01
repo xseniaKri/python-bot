@@ -31,8 +31,20 @@ uvicorn app.main:app --reload
 ```
 python-bot/
 ├── backend/
-│   └── main.py       # Точка входа FastAPI
+│   ├── api
+│   ├── core
+│   ├── models
+│   ├── schemas
+│   ├── services
+│   └── main.py      
 ├── bot
+│   ├── data
+│   ├── db
+│   ├── handlers
+│   ├── keyboards
+│   ├── states
+│   ├── create_bot.py
+│   └── main.py    
 ├── initdb
 ├── docker-compose.yml
 └── README.md
