@@ -3,7 +3,7 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 
-from app.keyboards.quiz_kb import generate_keyboard
+from bot.keyboards.quiz_kb import generate_keyboard
 
 
 

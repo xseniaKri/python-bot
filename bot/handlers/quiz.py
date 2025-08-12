@@ -4,11 +4,11 @@ from random import randint
 from os import getenv
 from dotenv import load_dotenv
 
-from app.states.quiz_states import Quiz
-from app.data.questions import questions, good_answers, bad_answers, final_vars
-from app.keyboards.quiz_kb import generate_keyboard
-from app.db.crud import add_result, get_result
-from app.create_bot import bot
+from bot.states.quiz_states import Quiz
+from bot.data.questions import questions, good_answers, bad_answers, final_vars
+from bot.keyboards.quiz_kb import generate_keyboard
+from bot.db.crud import add_result, get_result
+from bot.create_bot import bot
 
 load_dotenv()
 ADMIN_ID = getenv("ADMIN_ID")

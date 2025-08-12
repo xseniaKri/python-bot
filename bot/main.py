@@ -5,9 +5,9 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from app.handlers.start import start_router
-from app.handlers.quiz import quiz_router
-from app.create_bot import bot, dp
+from bot.handlers.start import start_router
+from bot.handlers.quiz import quiz_router
+from bot.create_bot import bot, dp
 
 
 

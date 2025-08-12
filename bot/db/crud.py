@@ -1,5 +1,5 @@
-from app.db.models import Users
-from app.db.db import SessionLocal
+from bot.db.models import Users
+from bot.db.db import SessionLocal
 from sqlalchemy.future import select
 from typing import Dict
 
