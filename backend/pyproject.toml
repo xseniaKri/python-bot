@@ -1,9 +1,0 @@
-[tool.poetry]
-package-mode = false
-
-[tool.poetry.dependencies]
-python = "^3.12"
-fastapi = "^0.115.13"
-uvicorn = {extras = ["standart"], version = "^0.34.3"}
-pydantic = {extras = ["email"], version = "^2.11.7"}
-pydantic-settings = "^2.9.1"
